@@ -636,6 +636,8 @@ def processCmdLine():
 	parser.add_argument('--startdate', help='Only include image/file(s) captured on or later than date. Date-only Ex: --startdate 12/05/14. Date+Time Example: --startdate \"12/05/14 15:30:00\"', metavar="date", required=False)
 	parser.add_argument('--enddate', help='Only include image/file(s) captured on or earlier than date or date+time. Date without a specified time is inclusive, so for example --enddate 06/12/14 is interpreted as 06/12/14 23:59:59', metavar="date", required=False)
 	parser.add_argument('--outputdir', type=str, help='Directory to store image/file(s) to.  Default is current directory. No ending backslash is necessary. If path contains any spaces enclose it in double quotes. Example: --outputdir \"c:\My Documents\"', default=None, metavar="path", required=False)
+	parser.add_argument('--datedfolder', help='Store images in a folder with today\'s date.', action='store_true',dest='datedfolder', required=False)
+	parser.add_argument('--camerafolder', help='Store images in a folder with camera\'s name.', action='store_true',dest='camerafolder', required=False)
 	parser.add_argument('--ifexists', type=str.lower, choices=['uniquename', 'skip', 'overwrite', 'prompt', 'exit'], help='Action to take if file with same name already exists. Default is "%(default)s"', default='uniquename', required=False)
 	parser.add_argument('--downloadhistory', type=str.lower, choices=['skipfiles', 'ignore', 'clear' ], help='\'skipfiles\' means that files in history (ie, previously downloaded) will be skipped and not downloaded. Default is "%(default)s"', default='skipfiles', required=False)
 	parser.add_argument('--onlyfolders', help='Only include image/file(s) existing in specified camera folders.. Ex: \"--onlyfolders 100D7200 101D7200\". Default is to include all folders', default=None, nargs='+', metavar="camera_folder", required=False)
@@ -2591,7 +2593,28 @@ def downloadMtpFileObjects(firstMtpObjectToDownload = None):
 			(dirAfterRename, filenameAfterRename) = performDirAndFileRename(renameDict, True)
 		else:
 			filenameAfterRename = filenameWithObjTypeSuffixBeforeRename
-			dirAfterRename = os.path.abspath(g.args['outputdir'])
+			if g.args['datedfolder'] and g.args['camerafolder']:
+				date = str(datetime.date.today())
+				newdir = os.path.join(g.args['outputdir'], g.mtpDeviceInfo.modelStr, date)
+				if not os.path.exists(g.args['outputdir']+"\\"+g.mtpDeviceInfo.modelStr):
+					os.mkdir(os.path.join(g.args['outputdir'], g.mtpDeviceInfo.modelStr))
+				if not os.path.exists(g.args['outputdir']+"\\"+g.mtpDeviceInfo.modelStr+"\\"+date):
+					os.mkdir(os.path.join(g.args['outputdir'], g.mtpDeviceInfo.modelStr, date))
+				dirAfterRename = os.path.abspath(newdir)
+			elif g.args['datedfolder']:
+				date = str(datetime.date.today())
+				newdir = os.path.join(g.args['outputdir'], date)
+				if not os.path.exists(newdir):
+					os.mkdir(newdir)
+				dirAfterRename = os.path.abspath(newdir)
+			elif g.args['camerafolder']:
+				newdir = os.path.join(g.args['outputdir'], g.mtpDeviceInfo.modelStr)
+				camerafolder
+				if not os.path.exists(newdir):
+					os.mkdir(newdir)
+				dirAfterRename = os.path.abspath(newdir)
+			else:
+				dirAfterRename = os.path.abspath(g.args['outputdir'])
 			
 			
 		#
